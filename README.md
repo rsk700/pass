@@ -20,32 +20,32 @@ Some examples available inside `examples/` folder. Keep in mind changes will be 
 
 # Checks
 
-Named - allows to set name of another check
-Check_AlwaysOk - always true
-Check_And - checks multiple checks with `and` operator
-Check_Constant - always returns constant configured value
-Check_FileContainsOnce - verifies if file contains provided data once
-Check_FileContent - verifies if files is exactly as provided data
-Check_IsDir - verifies if path is directory
-Check_IsFile - verifies if path is regular file
-Check_Not - negates another check
-Check_Or - checks multiple checks with `or` operator
-Check_PathReadable - checks if file can be read
-Check_PathWritable - checks if file can be written
-Check_StderrContainsOnce - checks if standard error output of command contains provided data once
-Check_StdoutContainsOnce - checks if standard output of command contains provided data once
-Check_UserIsRoot - checks if current user is root
+* Named - allows to set name of another check
+* Check_AlwaysOk - always true
+* Check_And - checks multiple checks with `and` operator
+* Check_Constant - always returns constant configured value
+* Check_FileContainsOnce - verifies if file contains provided data once
+* Check_FileContent - verifies if files is exactly as provided data
+* Check_IsDir - verifies if path is directory
+* Check_IsFile - verifies if path is regular file
+* Check_Not - negates another check
+* Check_Or - checks multiple checks with `or` operator
+* Check_PathReadable - checks if file can be read
+* Check_PathWritable - checks if file can be written
+* Check_StderrContainsOnce - checks if standard error output of command contains provided data once
+* Check_StdoutContainsOnce - checks if standard output of command contains provided data once
+* Check_UserIsRoot - checks if current user is root
 
 # Actions
 
-Named - allows to set name of another action
-Action_Constant - always fails or succeeds based on provided value
-Action_CreateDir - create directory
-Action_DeleteFile - delete file
-Action_DoNothing - doing nothing
-Action_InstallAptPackages - installs listed apt packages
-Action_Many - wraps multiple actions, making it single action
-Action_ReplaceInFileOnce - replaces data in file exactly once, fails if no matches or more than one match
-Action_RunProcess - run shell command
-Action_SetFilePermissions - sets file access mode, user owner and group owner
-Action_WriteFile - write data to file
+* Named - allows to set name of another action
+* Action_Constant - always fails or succeeds based on provided value
+* Action_CreateDir - create directory
+* Action_DeleteFile - delete file
+* Action_DoNothing - doing nothing
+* Action_InstallAptPackages - installs listed apt packages
+* Action_Many - wraps multiple actions, making it single action
+* Action_ReplaceInFileOnce - replaces data in file exactly once, fails if no matches or more than one match
+* Action_RunProcess - run shell command
+* Action_SetFilePermissions - sets file access mode, user owner and group owner
+* Action_WriteFile - write data to file
