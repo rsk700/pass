@@ -26,6 +26,7 @@ pub fn build(b: *std.build.Builder) void {
     example_https_webserver.setTarget(target);
     example_https_webserver.setBuildMode(mode);
     example_https_webserver.addPackagePath("pass", "src/pass.zig");
+    example_https_webserver.addPackagePath("bt", "libs/bt/src/main.zig");
     example_https_webserver.install();
 
     const run_cmd = exe.run();

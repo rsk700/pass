@@ -9,6 +9,7 @@
 const std = @import("std");
 const assert = std.debug.assert;
 const pass = @import("pass");
+const bt = @import("bt");
 const checks = pass.checks;
 const actions = pass.actions;
 
@@ -22,8 +23,8 @@ pub fn main() void {
     comptime assert(!std.mem.eql(u8, email, "your_email"));
     comptime assert(!std.mem.eql(u8, webserver_domain, "your_domain"));
 
-    const nginx_conf = std.mem.replaceOwned(u8, a, @embedFile("https_webserver_nginx.conf"), "{--domain--}", webserver_domain) catch unreachable;
-    defer a.free(nginx_conf);
+    @setEvalBranchQuota(10000);
+    const nginx_conf = bt.genComptime(@embedFile("https_webserver_nginx.conf"), .{ .domain = webserver_domain });
     const index_html = @embedFile("https_webserver_index.html");
     const certbot_renew = @embedFile("https_webserver_certbot-renew");
 
