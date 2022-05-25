@@ -445,3 +445,42 @@ test "Action_ReplaceInFileOnce" {
         try expect(check_content.yes(a));
     }
 }
+
+pub const Action_RenameDir = struct {
+    const Self = @This();
+    base_dir: []const u8,
+    rel_old_path: []const u8,
+    rel_new_path: []const u8,
+
+    pub fn init(base_dir: []const u8, rel_old_path: []const u8, rel_new_path: []const u8) Self {
+        std.debug.assert(std.fs.path.isAbsolute(base_dir));
+        std.debug.assert(!std.fs.path.isAbsolute(rel_old_path));
+        std.debug.assert(!std.fs.path.isAbsolute(rel_new_path));
+        return .{ .base_dir = base_dir, .rel_old_path = rel_old_path, .rel_new_path = rel_new_path };
+    }
+
+    pub fn run(self: *const Self, _: Allocator) pass.ActionResult {
+        var dir = std.fs.openDirAbsolute(self.base_dir, .{ .iterate = true }) catch return .fail;
+        defer dir.close();
+        dir.rename(self.rel_old_path, self.rel_new_path) catch return .fail;
+        return .ok;
+    }
+
+    pub fn as_Action(self: *const Self) pass.Action {
+        return pass.Action.init(@typeName(Self), self, run);
+    }
+};
+
+// test "Action_RenameDir" {
+//     const testing = @import("std").testing;
+//     const expect = testing.expect;
+//     const a = testing.allocator;
+//     const checks = @import("checks.zig");
+//     {
+//         _ = Action_CreateDir.init("/tmp/testing_pass_action_rename_dir", 0o777, "root", "root").run(a);
+//         var rename = Action_RenameDir.init("/tmp/", "testing_pass_action_rename_dir", "testing_pass_action_rename_dir_new").as_Action();
+//         try expect(rename.run(a) == .ok);
+//         var check = checks.Check_IsDir.init("/tmp/testing_pass_action_rename_dir_new").as_Check();
+//         try expect(check.yes(a));
+//     }
+// }
