@@ -45,6 +45,7 @@ Some examples available inside `examples/` folder. Keep in mind changes will be 
 * Action_DoNothing - doing nothing
 * Action_InstallAptPackages - installs listed apt packages
 * Action_Many - wraps multiple actions, making it single action
+* Action_RenameDir - rename directory
 * Action_ReplaceInFileOnce - replaces data in file exactly once, fails if no matches or more than one match
 * Action_RunProcess - run shell command
 * Action_SetFilePermissions - sets file access mode, user owner and group owner
