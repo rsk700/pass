@@ -50,3 +50,13 @@ Some examples available inside `examples/` folder. Keep in mind changes will be 
 * Action_RunProcess - run shell command
 * Action_SetFilePermissions - sets file access mode, user owner and group owner
 * Action_WriteFile - write data to file
+
+# Comptime variants
+
+Each check and action has `comptime` variant (less boilerplate code), naming rules is:
+
+* comptime variant of `Check_AlwaysOk` is `alwaysOk`
+
+exceptions is:
+
+* `Check_And` and `Check_Or`, for which `comptime` variants is `and_` and `or_`

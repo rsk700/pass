@@ -3,6 +3,21 @@ const Allocator = std.mem.Allocator;
 const runWithCheckedOutput = @import("process.zig").runWithCheckedOutput;
 const pass = @import("pass.zig");
 
+pub fn alwaysOk() pass.Check {
+    comptime {
+        return Check_AlwaysOk.init().as_Check();
+    }
+}
+
+test "alwaysOk" {
+    const expect = std.testing.expect;
+    const a = std.testing.allocator;
+    {
+        const check = alwaysOk();
+        try expect(check.yes(a));
+    }
+}
+
 pub const Check_AlwaysOk = struct {
     const Self = @This();
 
@@ -18,6 +33,21 @@ pub const Check_AlwaysOk = struct {
         return pass.Check.init(@typeName(Self), self, yes);
     }
 };
+
+pub fn constant(comptime result: bool) pass.Check {
+    comptime {
+        return Check_Constant.init(result).as_Check();
+    }
+}
+
+test "constant" {
+    const expect = std.testing.expect;
+    const a = std.testing.allocator;
+    {
+        const check = constant(true);
+        try expect(check.yes(a));
+    }
+}
 
 pub const Check_Constant = struct {
     const Self = @This();
@@ -57,6 +87,12 @@ test {
     }
 }
 
+pub fn userIsRoot() pass.Check {
+    comptime {
+        return Check_UserIsRoot.init().as_Check();
+    }
+}
+
 pub const Check_UserIsRoot = struct {
     const Self = @This();
 
@@ -73,6 +109,25 @@ pub const Check_UserIsRoot = struct {
         return pass.Check.init(@typeName(Self), self, yes);
     }
 };
+
+pub fn isFile(comptime path: []const u8) pass.Check {
+    comptime {
+        return Check_IsFile.init(path).as_Check();
+    }
+}
+
+test "isFile" {
+    const expect = std.testing.expect;
+    const a = std.testing.allocator;
+    {
+        const check = isFile("/etc/fstab");
+        try expect(check.yes(a));
+    }
+    {
+        const check = isFile("/etc");
+        try expect(!check.yes(a));
+    }
+}
 
 pub const Check_IsFile = struct {
     const Self = @This();
@@ -113,6 +168,16 @@ test "Check_IsFile" {
         var check = Check_IsFile.init("/random-non-existing-path").as_Check();
         try testing.expect(!check.yes(a));
     }
+}
+
+pub fn isDir(comptime path: []const u8) pass.Check {
+    comptime {
+        return Check_IsDir.init(path).as_Check();
+    }
+}
+
+test "isDir" {
+    _ = isDir("123");
 }
 
 pub const Check_IsDir = struct {
@@ -156,6 +221,16 @@ test "Check_IsDir" {
     }
 }
 
+pub fn pathReadable(comptime path: []const u8) pass.Check {
+    comptime {
+        return Check_PathReadable.init(path).as_Check();
+    }
+}
+
+test "pathReadable" {
+    _ = pathReadable("123");
+}
+
 pub const Check_PathReadable = struct {
     const Self = @This();
     path: []const u8,
@@ -184,6 +259,16 @@ test "Check_PathReadable" {
         var check = Check_PathReadable.init("/etc/fstab").as_Check();
         try testing.expect(check.yes(a));
     }
+}
+
+pub fn pathWritable(comptime path: []const u8) pass.Check {
+    comptime {
+        return Check_PathWritable.init(path).as_Check();
+    }
+}
+
+test "pathWritable" {
+    _ = pathWritable("123");
 }
 
 pub const Check_PathWritable = struct {
@@ -216,7 +301,17 @@ test "Check_PathWritable" {
     }
 }
 
-pub const Named = struct {
+pub fn named(comptime name: []const u8, comptime check: pass.Check) pass.Check {
+    comptime {
+        return Check_Named.init(name, check).as_Check();
+    }
+}
+
+test "named" {
+    _ = named("new name", comptime alwaysOk());
+}
+
+pub const Check_Named = struct {
     const Self = @This();
     name: []const u8,
     check: pass.Check,
@@ -234,13 +329,23 @@ pub const Named = struct {
     }
 };
 
-test "Named" {
+test "Check_Named" {
     const testing = @import("std").testing;
     const expect = testing.expect;
     {
-        const named = Named.init("new name", Check_AlwaysOk.init().as_Check()).as_Check();
-        try expect(std.mem.eql(u8, named.name, "new name"));
+        const check_named = Check_Named.init("new name", Check_AlwaysOk.init().as_Check()).as_Check();
+        try expect(std.mem.eql(u8, check_named.name, "new name"));
     }
+}
+
+pub fn not(comptime check: pass.Check) pass.Check {
+    comptime {
+        return Check_Not.init(check).as_Check();
+    }
+}
+
+test "not" {
+    _ = not(comptime alwaysOk());
 }
 
 pub const Check_Not = struct {
@@ -259,6 +364,16 @@ pub const Check_Not = struct {
         return pass.Check.init(@typeName(Self), self, yes);
     }
 };
+
+pub fn or_(comptime checks: []const pass.Check) pass.Check {
+    comptime {
+        return Check_Or.init(checks).as_Check();
+    }
+}
+
+test "or_" {
+    _ = or_(comptime &.{alwaysOk()});
+}
 
 pub const Check_Or = struct {
     const Self = @This();
@@ -281,6 +396,16 @@ pub const Check_Or = struct {
         return pass.Check.init(@typeName(Self), self, yes);
     }
 };
+
+pub fn and_(comptime checks: []const pass.Check) pass.Check {
+    comptime {
+        return Check_And.init(checks).as_Check();
+    }
+}
+
+test "and_" {
+    _ = and_(comptime &.{alwaysOk()});
+}
 
 pub const Check_And = struct {
     const Self = @This();
@@ -344,6 +469,16 @@ test "Checks boolean logic" {
     }
 }
 
+pub fn stdoutContainsOnce(comptime cmd: []const []const u8, comptime data: []const u8) pass.Check {
+    comptime {
+        return Check_StdoutContainsOnce.init(cmd, data).as_Check();
+    }
+}
+
+test "stdoutContainsOnce" {
+    _ = stdoutContainsOnce(&.{"aaa"}, "data");
+}
+
 pub const Check_StdoutContainsOnce = struct {
     const Self = @This();
     cmd: []const []const u8,
@@ -385,6 +520,16 @@ test "Check_StdoutContainsOnce" {
         const check = Check_StdoutContainsOnce.init(&.{ "echo", "abcaaa123" }, "aaaa").as_Check();
         try expect(!check.yes(a));
     }
+}
+
+pub fn stderrContainsOnce(comptime cmd: []const []const u8, comptime data: []const u8) pass.Check {
+    comptime {
+        return Check_StderrContainsOnce.init(cmd, data).as_Check();
+    }
+}
+
+test "stderrContainsOnce" {
+    _ = stderrContainsOnce(&.{"123"}, "data");
 }
 
 pub const Check_StderrContainsOnce = struct {
@@ -430,6 +575,16 @@ test "Check_StderrContainsOnce" {
     }
 }
 
+pub fn fileContent(comptime path: []const u8, comptime content: []const u8) pass.Check {
+    comptime {
+        return Check_FileContent.init(path, content).as_Check();
+    }
+}
+
+test "fileContent" {
+    _ = fileContent("123", "abc");
+}
+
 pub const Check_FileContent = struct {
     const Self = @This();
     path: []const u8,
@@ -468,6 +623,12 @@ test "Check_FileContent" {
         try expect(check_content.yes(a));
         const check_incorrect_content = Check_FileContent.init(path, "kkk").as_Check();
         try expect(!check_incorrect_content.yes(a));
+    }
+}
+
+pub fn fileContainsOnce(comptime path: []const u8, comptime target: []const u8) pass.Check {
+    comptime {
+        return Check_FileContainsOnce.init(path, target).as_Check();
     }
 }
 

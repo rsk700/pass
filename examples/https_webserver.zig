@@ -9,11 +9,11 @@
 const std = @import("std");
 const assert = std.debug.assert;
 const pass = @import("pass");
-const checks = pass.checks;
-const actions = pass.actions;
+const c = pass.checks;
+const a = pass.actions;
 
 pub fn main() void {
-    const a = std.testing.allocator;
+    const allocator = std.testing.allocator;
 
     // ! CHANGE EMAIL AND WEBSERVER NAMES TO CORRECT VALUES !
     const email = "your_email";
@@ -22,89 +22,89 @@ pub fn main() void {
     comptime assert(!std.mem.eql(u8, email, "your_email"));
     comptime assert(!std.mem.eql(u8, webserver_domain, "your_domain"));
 
-    const nginx_conf = std.mem.replaceOwned(u8, a, @embedFile("https_webserver_nginx.conf"), "{--domain--}", webserver_domain) catch unreachable;
-    defer a.free(nginx_conf);
+    const nginx_conf = std.mem.replaceOwned(u8, allocator, @embedFile("https_webserver_nginx.conf"), "{--domain--}", webserver_domain) catch unreachable;
+    defer allocator.free(nginx_conf);
     const index_html = @embedFile("https_webserver_index.html");
     const certbot_renew = @embedFile("https_webserver_certbot-renew");
 
     const book = pass.Playbook.init(
-        &.{
-            checks.Check_UserIsRoot.init().as_Check(),
-            checks.Named.init("Os is Ubuntu 20.04", checks.Check_StdoutContainsOnce.init(&.{ "lsb_release", "-a" }, "Ubuntu 20.04").as_Check()).as_Check(),
+        comptime &.{
+            c.userIsRoot(),
+            c.named("Os is Ubuntu 20.04", c.stdoutContainsOnce(&.{ "lsb_release", "-a" }, "Ubuntu 20.04")),
         },
         &[_]pass.Instruction{
-            .{
-                .action = actions.Named.init("Upgrade apt packages", actions.Action_Many.init(&.{
-                    actions.Action_RunProcess.init(&.{ "apt", "update", "-y" }).as_Action(),
-                    actions.Action_RunProcess.init(&.{ "apt", "upgrade", "-y" }).as_Action(),
-                }).as_Action()).as_Action(),
+            comptime .{
+                .action = a.named("Upgrade apt packages", a.many(&.{
+                    a.runProcess(&.{ "apt", "update", "-y" }),
+                    a.runProcess(&.{ "apt", "upgrade", "-y" }),
+                })),
             },
-            .{
-                .action = actions.Action_InstallAptPackages.init(&.{ "nginx", "certbot" }).as_Action(),
+            comptime .{
+                .action = a.installAptPackages(&.{ "nginx", "certbot" }),
             },
-            .{
+            comptime .{
                 .env = &.{
-                    checks.Named.init("Firewall is inactive", checks.Check_StdoutContainsOnce.init(&.{ "ufw", "status" }, "Status: inactive").as_Check()).as_Check(),
+                    c.named("Firewall is inactive", c.stdoutContainsOnce(&.{ "ufw", "status" }, "Status: inactive")),
                 },
-                .action = actions.Named.init("Configure firewall", actions.Action_Many.init(&.{
-                    actions.Action_RunProcess.init(&.{ "ufw", "allow", "ssh" }).as_Action(),
-                    actions.Action_RunProcess.init(&.{ "ufw", "allow", "http" }).as_Action(),
-                    actions.Action_RunProcess.init(&.{ "ufw", "allow", "https" }).as_Action(),
-                    actions.Action_RunProcess.init(&.{ "ufw", "default", "deny", "incoming" }).as_Action(),
-                    actions.Action_RunProcess.init(&.{ "ufw", "default", "allow", "outgoing" }).as_Action(),
-                }).as_Action()).as_Action(),
+                .action = a.named("Configure firewall", a.many(&.{
+                    a.runProcess(&.{ "ufw", "allow", "ssh" }),
+                    a.runProcess(&.{ "ufw", "allow", "http" }),
+                    a.runProcess(&.{ "ufw", "allow", "https" }),
+                    a.runProcess(&.{ "ufw", "default", "deny", "incoming" }),
+                    a.runProcess(&.{ "ufw", "default", "allow", "outgoing" }),
+                })),
             },
-            .{
-                .action = actions.Named.init("Stop nginx", actions.Action_RunProcess.init(&.{ "systemctl", "stop", "nginx" }).as_Action()).as_Action(),
+            comptime .{
+                .action = a.named("Stop nginx", a.runProcess(&.{ "systemctl", "stop", "nginx" })),
             },
-            .{
+            comptime .{
                 .env = &.{
-                    checks.Named.init("Nginx is inactive", checks.Check_StdoutContainsOnce.init(&.{ "systemctl", "is-active", "nginx" }, "inactive").as_Check()).as_Check(),
+                    c.named("Nginx is inactive", c.stdoutContainsOnce(&.{ "systemctl", "is-active", "nginx" }, "inactive")),
                 },
                 .confirm = &.{
-                    checks.Named.init("Ssl certificate exists", checks.Check_IsFile.init("/etc/letsencrypt/live/" ++ webserver_domain ++ "/fullchain.pem").as_Check()).as_Check(),
+                    c.named("Ssl certificate exists", c.isFile("/etc/letsencrypt/live/" ++ webserver_domain ++ "/fullchain.pem")),
                 },
-                .action = actions.Named.init("Request ssl certificate", actions.Action_RunProcess.init(&.{ "certbot", "certonly", "--standalone", "--agree-tos", "--no-eff-email", "-m", email, "-d", webserver_domain }).as_Action()).as_Action(),
+                .action = a.named("Request ssl certificate", a.runProcess(&.{ "certbot", "certonly", "--standalone", "--agree-tos", "--no-eff-email", "-m", email, "-d", webserver_domain })),
             },
-            .{
+            comptime .{
                 .confirm = &.{
-                    checks.Named.init("Is certbot renew enabled", checks.Check_IsFile.init("/etc/cron.weekly/certbot-renew").as_Check()).as_Check(),
+                    c.named("Is certbot renew enabled", c.isFile("/etc/cron.weekly/certbot-renew")),
                 },
-                .action = actions.Named.init("Enable certbot renew", actions.Action_Many.init(&.{
-                    actions.Action_WriteFile.init("/etc/cron.weekly/certbot-renew", certbot_renew).as_Action(),
-                    actions.Action_SetFilePermissions.init("/etc/cron.weekly/certbot-renew", 0o555, "root", "root").as_Action(),
-                }).as_Action()).as_Action(),
+                .action = a.named("Enable certbot renew", a.many(&.{
+                    a.writeFile("/etc/cron.weekly/certbot-renew", certbot_renew),
+                    a.setFilePermissions("/etc/cron.weekly/certbot-renew", 0o555, "root", "root"),
+                })),
             },
-            .{
+            comptime .{
                 .confirm = &.{
-                    checks.Named.init("Default nginx site deleted", checks.Check_Not.init(checks.Check_IsFile.init("/etc/nginx/sites-enabled/default").as_Check()).as_Check()).as_Check(),
+                    c.named("Default nginx site deleted", c.not(c.isFile("/etc/nginx/sites-enabled/default"))),
                 },
-                .action = actions.Named.init("Delete default nginx site", actions.Action_DeleteFile.init("/etc/nginx/sites-enabled/default").as_Action()).as_Action(),
+                .action = a.named("Delete default nginx site", a.deleteFile("/etc/nginx/sites-enabled/default")),
             },
             .{
-                .confirm = &.{
-                    checks.Named.init("Is pass demo site nginx configuration exists", checks.Check_IsFile.init("/etc/nginx/sites-enabled/pass-demo").as_Check()).as_Check(),
+                .confirm = comptime &.{
+                    c.named("Is pass demo site nginx configuration exists", c.isFile("/etc/nginx/sites-enabled/pass-demo")),
                 },
-                .action = actions.Named.init("Create pass demo site nginx configuration", actions.Action_WriteFile.init("/etc/nginx/sites-enabled/pass-demo", nginx_conf).as_Action()).as_Action(),
+                .action = a.Action_Named.init("Create pass demo site nginx configuration", a.Action_WriteFile.init("/etc/nginx/sites-enabled/pass-demo", nginx_conf).as_Action()).as_Action(),
             },
-            .{
-                .action = actions.Named.init("Create website files", actions.Action_Many.init(&.{
-                    actions.Action_CreateDir.init("/opt/pass-demo-site", 0o774, "www-data", "www-data").as_Action(),
-                    actions.Action_WriteFile.init("/opt/pass-demo-site/index.html", index_html).as_Action(),
-                    actions.Action_SetFilePermissions.init("/opt/pass-demo-site/index.html", 0o664, "www-data", "www-data").as_Action(),
-                }).as_Action()).as_Action(),
+            comptime .{
+                .action = a.named("Create website files", a.many(&.{
+                    a.createDir("/opt/pass-demo-site", 0o774, "www-data", "www-data"),
+                    a.writeFile("/opt/pass-demo-site/index.html", index_html),
+                    a.setFilePermissions("/opt/pass-demo-site/index.html", 0o664, "www-data", "www-data"),
+                })),
             },
-            .{
-                .action = actions.Named.init("Start nginx", actions.Action_RunProcess.init(&.{ "systemctl", "start", "nginx" }).as_Action()).as_Action(),
+            comptime .{
+                .action = a.named("Start nginx", a.runProcess(&.{ "systemctl", "start", "nginx" })),
             },
-            .{
-                .action = actions.Named.init("Start firewall", actions.Action_RunProcess.init(&.{ "systemctl", "start", "ufw" }).as_Action()).as_Action(),
+            comptime .{
+                .action = a.named("Start firewall", a.runProcess(&.{ "systemctl", "start", "ufw" })),
             },
-            .{
-                .action = actions.Named.init("Enable firewall", actions.Action_RunProcess.init(&.{ "ufw", "--force", "enable" }).as_Action()).as_Action(),
+            comptime .{
+                .action = a.named("Enable firewall", a.runProcess(&.{ "ufw", "--force", "enable" })),
             },
         },
     );
 
-    _ = book.apply(a);
+    _ = book.apply(allocator);
 }

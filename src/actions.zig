@@ -2,7 +2,17 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const pass = @import("pass.zig");
 
-pub const Named = struct {
+pub fn named(comptime name: []const u8, comptime action: pass.Action) pass.Action {
+    comptime {
+        return Action_Named.init(name, action).as_Action();
+    }
+}
+
+test "named" {
+    _ = named("123", comptime Action_DoNothing.init().as_Action());
+}
+
+pub const Action_Named = struct {
     const Self = @This();
     name: []const u8,
     action: pass.Action,
@@ -24,9 +34,19 @@ test {
     const testing = @import("std").testing;
     const expect = testing.expect;
     {
-        const named = Named.init("new name", Action_DoNothing.init().as_Action()).as_Action();
-        try expect(std.mem.eql(u8, named.name, "new name"));
+        const action_named = Action_Named.init("new name", Action_DoNothing.init().as_Action()).as_Action();
+        try expect(std.mem.eql(u8, action_named.name, "new name"));
     }
+}
+
+pub fn doNothing() pass.Action {
+    comptime {
+        return Action_DoNothing.init().as_Action();
+    }
+}
+
+test "doNothing" {
+    _ = doNothing();
 }
 
 pub const Action_DoNothing = struct {
@@ -44,6 +64,16 @@ pub const Action_DoNothing = struct {
         return pass.Action.init(@typeName(Self), self, run);
     }
 };
+
+pub fn constant(comptime result: pass.ActionResult) pass.Action {
+    comptime {
+        return Action_Constant.init(result).as_Action();
+    }
+}
+
+test "constant" {
+    _ = constant(.ok);
+}
 
 pub const Action_Constant = struct {
     const Self = @This();
@@ -75,6 +105,16 @@ test {
         const action = const_fail.as_Action();
         try testing.expect(action.run(testing.allocator) == .fail);
     }
+}
+
+pub fn many(comptime actions: []const pass.Action) pass.Action {
+    comptime {
+        return Action_Many.init(actions).as_Action();
+    }
+}
+
+test "many" {
+    _ = many(&.{comptime doNothing()});
 }
 
 pub const Action_Many = struct {
@@ -120,6 +160,16 @@ test "Action_Many" {
     }
 }
 
+pub fn runProcess(comptime cmd: []const []const u8) pass.Action {
+    comptime {
+        return Action_RunProcess.init(cmd).as_Action();
+    }
+}
+
+test "runProcess" {
+    _ = runProcess(&.{"123"});
+}
+
 pub const Action_RunProcess = struct {
     const process = @import("process.zig");
     const Self = @This();
@@ -157,6 +207,16 @@ test "Action_RunProcess" {
     }
 }
 
+pub fn installAptPackages(comptime packages: []const []const u8) pass.Action {
+    comptime {
+        return Action_InstallAptPackages.init(packages).as_Action();
+    }
+}
+
+test "installAptPackages" {
+    _ = installAptPackages(&.{"123"});
+}
+
 pub const Action_InstallAptPackages = struct {
     const process = @import("process.zig");
     const Self = @This();
@@ -189,6 +249,16 @@ pub const Action_InstallAptPackages = struct {
     }
 };
 
+pub fn deleteFile(comptime path: []const u8) pass.Action {
+    comptime {
+        return Action_DeleteFile.init(path).as_Action();
+    }
+}
+
+test "deleteFile" {
+    _ = deleteFile("123");
+}
+
 pub const Action_DeleteFile = struct {
     const Self = @This();
     path: []const u8,
@@ -212,6 +282,16 @@ pub const Action_DeleteFile = struct {
         return pass.Action.init(@typeName(Self), self, run);
     }
 };
+
+pub fn writeFile(comptime path: []const u8, comptime data: []const u8) pass.Action {
+    comptime {
+        return Action_WriteFile.init(path, data).as_Action();
+    }
+}
+
+test "writeFile" {
+    _ = writeFile("123", "data");
+}
 
 pub const Action_WriteFile = struct {
     const Self = @This();
@@ -299,6 +379,16 @@ test "groupIdFromName" {
     try expect(root_id == 0);
 }
 
+pub fn createDir(comptime path: []const u8, comptime access_mode: u64, comptime user_owner: []const u8, comptime group_owner: []const u8) pass.Action {
+    comptime {
+        return Action_CreateDir.init(path, access_mode, user_owner, group_owner).as_Action();
+    }
+}
+
+test "createDir" {
+    _ = createDir("123", 0o111, "root", "root");
+}
+
 pub const Action_CreateDir = struct {
     const Self = @This();
     path: []const u8,
@@ -342,6 +432,16 @@ pub const Action_CreateDir = struct {
 //     }
 // }
 
+pub fn setFilePermissions(comptime path: []const u8, comptime access_mode: u64, comptime user_owner: []const u8, comptime group_owner: []const u8) pass.Action {
+    comptime {
+        return Action_SetFilePermissions.init(path, access_mode, user_owner, group_owner).as_Action();
+    }
+}
+
+test "setFilePermissions" {
+    _ = setFilePermissions("123", 0o111, "root", "root");
+}
+
 pub const Action_SetFilePermissions = struct {
     const Self = @This();
     path: []const u8,
@@ -380,6 +480,16 @@ pub const Action_SetFilePermissions = struct {
 //         try expect(file_permissions.run(a) == .ok);
 //     }
 // }
+
+pub fn replaceInFileOnce(comptime path: []const u8, comptime target: []const u8, comptime new_data: []const u8) pass.Action {
+    comptime {
+        return Action_ReplaceInFileOnce.init(path, target, new_data).as_Action();
+    }
+}
+
+test "replaceInFileOnce" {
+    _ = replaceInFileOnce("123", "aaa", "bbb");
+}
 
 pub const Action_ReplaceInFileOnce = struct {
     const Self = @This();
@@ -444,6 +554,16 @@ test "Action_ReplaceInFileOnce" {
         const check_content = checks.Check_FileContent.init(path, "1_abc_2_abc").as_Check();
         try expect(check_content.yes(a));
     }
+}
+
+pub fn renameDir(comptime base_dir: []const u8, comptime rel_old_path: []const u8, comptime rel_new_path: []const u8) pass.Action {
+    comptime {
+        return Action_RenameDir.init(base_dir, rel_old_path, rel_new_path).as_Action();
+    }
+}
+
+test "renameDir" {
+    _ = renameDir("/tmp", "aaa", "bbb");
 }
 
 pub const Action_RenameDir = struct {
