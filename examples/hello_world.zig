@@ -7,7 +7,8 @@ const checks = pass.checks;
 const actions = pass.actions;
 
 pub fn main() void {
-    const a = std.testing.allocator;
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const a = gpa.allocator();
     const current_dir = std.process.getCwdAlloc(a) catch unreachable;
     defer a.free(current_dir);
     const file_path = std.fs.path.join(a, &.{ current_dir, "pass-example__hello_world.txt" }) catch unreachable;
