@@ -13,7 +13,8 @@ const c = pass.checks;
 const a = pass.actions;
 
 pub fn main() void {
-    const allocator = std.testing.allocator;
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
 
     // ! CHANGE EMAIL AND WEBSERVER NAMES TO CORRECT VALUES !
     const email = "your_email";
