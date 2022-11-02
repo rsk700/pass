@@ -7,7 +7,7 @@ pub const Check = struct {
     const Self = @This();
     name: []const u8,
     ptr: *const anyopaque,
-    yesImpl: fn (ptr: *const anyopaque, a: Allocator) bool,
+    yesImpl: *const fn (ptr: *const anyopaque, a: Allocator) bool,
 
     pub fn init(name: []const u8, pointer: anytype, comptime yesFn: fn (@TypeOf(pointer), Allocator) bool) Self {
         const Ptr = @TypeOf(pointer);
@@ -17,7 +17,7 @@ pub const Check = struct {
         const alignment = ptr_info.Pointer.alignment;
         const impl = struct {
             fn yes(ptr: *const anyopaque, a: Allocator) bool {
-                const self: Ptr = if (@sizeOf(Ptr) == 0) undefined else @ptrCast(Ptr, @alignCast(alignment, ptr));
+                const self: Ptr = if (alignment == 0) undefined else @ptrCast(Ptr, @alignCast(alignment, ptr));
                 return yesFn(self, a);
             }
         };
@@ -37,7 +37,7 @@ pub const Action = struct {
     const Self = @This();
     name: []const u8,
     ptr: *const anyopaque,
-    runImpl: fn (ptr: *const anyopaque, a: Allocator) ActionResult,
+    runImpl: *const fn (ptr: *const anyopaque, a: Allocator) ActionResult,
 
     pub fn init(name: []const u8, pointer: anytype, comptime runFn: fn (@TypeOf(pointer), Allocator) ActionResult) Self {
         const Ptr = @TypeOf(pointer);
@@ -47,7 +47,7 @@ pub const Action = struct {
         const alignment = ptr_info.Pointer.alignment;
         const impl = struct {
             fn run(ptr: *const anyopaque, a: Allocator) ActionResult {
-                const self: Ptr = if (@sizeOf(Ptr) == 0) undefined else @ptrCast(Ptr, @alignCast(alignment, ptr));
+                const self: Ptr = if (alignment == 0) undefined else @ptrCast(Ptr, @alignCast(alignment, ptr));
                 return runFn(self, a);
             }
         };

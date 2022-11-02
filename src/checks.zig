@@ -138,7 +138,7 @@ pub const Check_IsFile = struct {
     }
 
     pub fn yes(self: *const Self, _: Allocator) bool {
-        const file = std.fs.openFileAbsolute(self.path, .{ .read = true, .write = false, .lock = .None }) catch {
+        const file = std.fs.openFileAbsolute(self.path, .{ .mode = .read_only, .lock = .None }) catch {
             return false;
         };
         defer file.close();
@@ -189,7 +189,7 @@ pub const Check_IsDir = struct {
     }
 
     pub fn yes(self: *const Self, _: Allocator) bool {
-        const file = std.fs.openFileAbsolute(self.path, .{ .read = true, .write = false, .lock = .None }) catch {
+        const file = std.fs.openFileAbsolute(self.path, .{ .mode = .read_only, .lock = .None }) catch {
             return false;
         };
         defer file.close();
@@ -240,7 +240,7 @@ pub const Check_PathReadable = struct {
     }
 
     pub fn yes(self: *const Self, _: Allocator) bool {
-        const file = std.fs.openFileAbsolute(self.path, .{ .read = true, .write = false, .lock = .None }) catch {
+        const file = std.fs.openFileAbsolute(self.path, .{ .mode = .read_only, .lock = .None }) catch {
             return false;
         };
         defer file.close();
@@ -280,7 +280,7 @@ pub const Check_PathWritable = struct {
     }
 
     pub fn yes(self: *const Self, _: Allocator) bool {
-        const file = std.fs.openFileAbsolute(self.path, .{ .read = false, .write = true, .lock = .None }) catch {
+        const file = std.fs.openFileAbsolute(self.path, .{ .mode = .write_only, .lock = .None }) catch {
             return false;
         };
         defer file.close();
@@ -597,7 +597,7 @@ pub const Check_FileContent = struct {
     pub fn yes(self: *const Self, a: Allocator) bool {
         // todo: check file size equal content size first
         const content = b: {
-            var file = std.fs.openFileAbsolute(self.path, .{ .read = true }) catch return false;
+            var file = std.fs.openFileAbsolute(self.path, .{ .mode = .read_only }) catch return false;
             defer file.close();
             break :b file.reader().readAllAlloc(a, std.math.maxInt(u64)) catch return false;
         };
@@ -643,7 +643,7 @@ pub const Check_FileContainsOnce = struct {
 
     pub fn yes(self: *const Self, a: Allocator) bool {
         const content = b: {
-            var file = std.fs.openFileAbsolute(self.path, .{ .read = true }) catch return false;
+            var file = std.fs.openFileAbsolute(self.path, .{ .mode = .read_only }) catch return false;
             defer file.close();
             break :b file.reader().readAllAlloc(a, std.math.maxInt(u64)) catch return false;
         };

@@ -407,7 +407,7 @@ pub const Action_CreateDir = struct {
                 return .fail;
             }
         };
-        var dir = std.fs.openDirAbsolute(self.path, .{ .iterate = true }) catch return .fail;
+        var dir = std.fs.openIterableDirAbsolute(self.path, .{}) catch return .fail;
         defer dir.close();
         dir.chmod(self.access_mode) catch return .fail;
         const user_id = userIdFromName(self.user_owner, a) catch return .fail;
@@ -503,7 +503,7 @@ pub const Action_ReplaceInFileOnce = struct {
 
     pub fn run(self: *const Self, a: Allocator) pass.ActionResult {
         const content = b: {
-            var file = std.fs.openFileAbsolute(self.path, .{ .read = true }) catch return .fail;
+            var file = std.fs.openFileAbsolute(self.path, .{ .mode = .read_only }) catch return .fail;
             defer file.close();
             break :b file.reader().readAllAlloc(a, std.math.maxInt(u64)) catch return .fail;
         };
@@ -580,7 +580,7 @@ pub const Action_RenameDir = struct {
     }
 
     pub fn run(self: *const Self, _: Allocator) pass.ActionResult {
-        var dir = std.fs.openDirAbsolute(self.base_dir, .{ .iterate = true }) catch return .fail;
+        var dir = std.fs.openDirAbsolute(self.base_dir, .{}) catch return .fail;
         defer dir.close();
         dir.rename(self.rel_old_path, self.rel_new_path) catch return .fail;
         return .ok;

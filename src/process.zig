@@ -35,8 +35,7 @@ fn copySliceToArray(data: []const u8, allocator: std.mem.Allocator) !std.ArrayLi
 }
 
 pub fn runWithCheckedOutput(cmd: []const []const u8, allocator: std.mem.Allocator) ProcessResult {
-    const proc = std.ChildProcess.init(cmd, allocator) catch return ProcessResult.failOnStart();
-    defer proc.deinit();
+    var proc = std.ChildProcess.init(cmd, allocator);
     proc.stdout_behavior = .Pipe;
     proc.stderr_behavior = .Pipe;
     proc.spawn() catch return ProcessResult.failOnStart();
