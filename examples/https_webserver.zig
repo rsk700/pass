@@ -29,6 +29,7 @@ pub fn main() void {
     const certbot_renew = @embedFile("https_webserver_certbot-renew");
 
     const book = pass.Playbook.init(
+        "Example installing nginx webserver with letsencrypt certificate",
         comptime &.{
             c.userIsRoot(),
             c.named("Os is Ubuntu 20.04", c.stdoutContainsOnce(&.{ "lsb_release", "-a" }, "Ubuntu 20.04")),

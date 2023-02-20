@@ -14,7 +14,7 @@ pub fn main() void {
     const file_path = std.fs.path.join(a, &.{ current_dir, "pass-example__hello_world.txt" }) catch unreachable;
     defer a.free(file_path);
 
-    const book = pass.Playbook.init(&.{}, &[_]pass.Instruction{
+    const book = pass.Playbook.init("Example creating file with \"Hello, world!\" text", &.{}, &[_]pass.Instruction{
         .{
             .confirm = &.{checks.Check_IsFile.init(file_path).as_Check()},
             .action = actions.Action_WriteFile.init(file_path, "Hello, world!").as_Action(),

@@ -34,12 +34,14 @@ pub const Instruction = struct {
 // todo: playbook description
 pub const Playbook = struct {
     const Self = @This();
+    // name of `Playbook` describing its purpose for user
+    name: []const u8,
     // global environment checks, if any of this checks is false, all actions considered failed
     env_checks: []const Check,
     instructions: []const Instruction,
 
-    pub fn init(env_checks: []const Check, instructions: []const Instruction) Self {
-        return .{ .env_checks = env_checks, .instructions = instructions };
+    pub fn init(name: []const u8, env_checks: []const Check, instructions: []const Instruction) Self {
+        return .{ .name = name, .env_checks = env_checks, .instructions = instructions };
     }
 
     fn checkChecks(story: *StoryFormatter, checks: []const Check, ok_is_true: bool, a: Allocator) bool {
@@ -81,15 +83,16 @@ pub const Playbook = struct {
         return true;
     }
 
-    fn printRunResult(ok: bool) void {
+    fn printRunResult(self: *const Self, ok: bool) void {
         const result_name = if (ok) "OK" else "FAIL";
-        print("\n{s}\n\n", .{result_name});
+        print("\n{s}\n\n{s}\n\n", .{self.name, result_name});
     }
 
     // todo: add test for each if
     pub fn check(self: *const Self, a: Allocator) bool {
+        print("Checking playbook: {s}\n", .{self.name});
         var playbook_ok: bool = true;
-        defer printRunResult(playbook_ok);
+        defer self.printRunResult(playbook_ok);
         var failedActions = std.ArrayList(usize).init(a);
         defer failedActions.deinit();
         var story = StoryFormatter.init(a);
@@ -178,11 +181,12 @@ pub const Playbook = struct {
     // todo: add test for each if
     // todo: on fail print list of fully applied actions
     pub fn apply(self: *const Self, a: Allocator) bool {
+        print("Applying playbook: {s}\n", .{self.name});
         var story = StoryFormatter.init(a);
         defer story.deinit();
         // using optional bool and defer for easier debugging of story sections, if variable was not assigned it is easy to spot which one and at what point
         var playbook_ok: ?bool = null;
-        defer printRunResult(playbook_ok.?);
+        defer self.printRunResult(playbook_ok.?);
         story.push("Applying Playbook");
         defer story.sectionResult(playbook_ok.?);
         if (self.env_checks.len > 0) {
