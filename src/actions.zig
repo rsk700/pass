@@ -305,7 +305,7 @@ pub const Action_WriteFile = struct {
     pub fn run(self: *const Self, _: Allocator) pass.ActionResult {
         const file = std.fs.createFileAbsolute(self.path, .{ .truncate = true, .lock = .Exclusive }) catch return .fail;
         defer file.close();
-        _ = file.write(self.data) catch return .fail;
+        file.writeAll(self.data) catch return .fail;
         return .ok;
     }
 
@@ -522,7 +522,7 @@ pub const Action_ReplaceInFileOnce = struct {
         {
             var file = std.fs.createFileAbsolute(self.path, .{ .truncate = true, .lock = .Exclusive }) catch return .fail;
             defer file.close();
-            _ = file.write(new_content) catch return .fail;
+            file.writeAll(new_content) catch return .fail;
         }
         return .ok;
     }
