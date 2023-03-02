@@ -259,6 +259,10 @@ test "Check_PathReadable" {
         var check = Check_PathReadable.init("/etc/fstab").as_Check();
         try testing.expect(check.yes(a));
     }
+    {
+        var check = Check_PathReadable.init("/etc").as_Check();
+        try testing.expect(check.yes(a));
+    }
 }
 
 pub fn pathWritable(comptime path: []const u8) pass.Check {
