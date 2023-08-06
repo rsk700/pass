@@ -46,7 +46,7 @@ pub const Playbook = struct {
 
     fn checkChecks(story: *StoryFormatter, checks: []const Check, ok_is_true: bool, a: Allocator) bool {
         var ok = true;
-        for (checks) |envCheck, i| {
+        for (checks, 0..) |envCheck, i| {
             var check_ok = envCheck.yes(a);
             if (!ok_is_true) {
                 check_ok = !check_ok;
@@ -58,7 +58,7 @@ pub const Playbook = struct {
     }
 
     fn checkResults(story: *StoryFormatter, checks: []const Check, a: Allocator) void {
-        for (checks) |envCheck, i| {
+        for (checks, 0..) |envCheck, i| {
             const check_ok = envCheck.yes(a);
             const result = if (check_ok) "true" else "flse";
             story.checkListItemResult(result, "{}.{s}", .{ i + 1, envCheck.name });
@@ -85,7 +85,7 @@ pub const Playbook = struct {
 
     fn printRunResult(self: *const Self, ok: bool) void {
         const result_name = if (ok) "OK" else "FAIL";
-        print("\n{s}\n\n{s}\n\n", .{self.name, result_name});
+        print("\n{s}\n\n{s}\n\n", .{ self.name, result_name });
     }
 
     // todo: add test for each if
@@ -109,7 +109,7 @@ pub const Playbook = struct {
                 var actions_ok = true;
                 story.push("Actions");
                 defer story.sectionResult(actions_ok);
-                for (self.instructions) |instruction, i| {
+                for (self.instructions, 0..) |instruction, i| {
                     var action_ok = true;
                     const action_name = std.fmt.allocPrint(a, "{}.{s}", .{ i + 1, instruction.action.name }) catch unreachable;
                     defer a.free(action_name);
@@ -201,7 +201,7 @@ pub const Playbook = struct {
         var actions_ok: ?bool = null;
         story.push("Actions");
         defer story.sectionResult(actions_ok.?);
-        for (self.instructions) |instruction, i| {
+        for (self.instructions, 0..) |instruction, i| {
             const action_name = std.fmt.allocPrint(a, "{}.{s}", .{ i + 1, instruction.action.name }) catch unreachable;
             defer a.free(action_name);
             var action_ok: ?bool = null;

@@ -30,7 +30,7 @@ pub const StoryFormatter = struct {
     }
 
     fn section(self: *Self) void {
-        for (self.section_stack.items) |s, i| {
+        for (self.section_stack.items, 0..) |s, i| {
             const square_brackets = contains_dot(s);
             if (square_brackets) {
                 print("[", .{});
