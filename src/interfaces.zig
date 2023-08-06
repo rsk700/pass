@@ -17,7 +17,7 @@ pub const Check = struct {
         const alignment = ptr_info.Pointer.alignment;
         const impl = struct {
             fn yes(ptr: *const anyopaque, a: Allocator) bool {
-                const self: Ptr = if (alignment == 0) undefined else @ptrCast(Ptr, @alignCast(alignment, ptr));
+                const self: Ptr = if (alignment == 0) undefined else @ptrCast(@alignCast(ptr));
                 return yesFn(self, a);
             }
         };
@@ -47,7 +47,7 @@ pub const Action = struct {
         const alignment = ptr_info.Pointer.alignment;
         const impl = struct {
             fn run(ptr: *const anyopaque, a: Allocator) ActionResult {
-                const self: Ptr = if (alignment == 0) undefined else @ptrCast(Ptr, @alignCast(alignment, ptr));
+                const self: Ptr = if (alignment == 0) undefined else @ptrCast(@alignCast(ptr));
                 return runFn(self, a);
             }
         };

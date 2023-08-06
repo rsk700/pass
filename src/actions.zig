@@ -3,9 +3,7 @@ const Allocator = std.mem.Allocator;
 const pass = @import("pass.zig");
 
 pub fn named(comptime name: []const u8, comptime action: pass.Action) pass.Action {
-    comptime {
-        return Action_Named.init(name, action).as_Action();
-    }
+    return comptime Action_Named.init(name, action).as_Action();
 }
 
 test "named" {
@@ -40,9 +38,7 @@ test {
 }
 
 pub fn doNothing() pass.Action {
-    comptime {
-        return Action_DoNothing.init().as_Action();
-    }
+    return comptime Action_DoNothing.init().as_Action();
 }
 
 test "doNothing" {
@@ -66,9 +62,7 @@ pub const Action_DoNothing = struct {
 };
 
 pub fn constant(comptime result: pass.ActionResult) pass.Action {
-    comptime {
-        return Action_Constant.init(result).as_Action();
-    }
+    return comptime Action_Constant.init(result).as_Action();
 }
 
 test "constant" {
@@ -108,9 +102,7 @@ test {
 }
 
 pub fn many(comptime actions: []const pass.Action) pass.Action {
-    comptime {
-        return Action_Many.init(actions).as_Action();
-    }
+    return comptime Action_Many.init(actions).as_Action();
 }
 
 test "many" {
@@ -161,9 +153,7 @@ test "Action_Many" {
 }
 
 pub fn runProcess(comptime cmd: []const []const u8) pass.Action {
-    comptime {
-        return Action_RunProcess.init(cmd).as_Action();
-    }
+    return comptime Action_RunProcess.init(cmd).as_Action();
 }
 
 test "runProcess" {
@@ -208,9 +198,7 @@ test "Action_RunProcess" {
 }
 
 pub fn installAptPackages(comptime packages: []const []const u8) pass.Action {
-    comptime {
-        return Action_InstallAptPackages.init(packages).as_Action();
-    }
+    return comptime Action_InstallAptPackages.init(packages).as_Action();
 }
 
 test "installAptPackages" {
@@ -250,9 +238,7 @@ pub const Action_InstallAptPackages = struct {
 };
 
 pub fn deleteFile(comptime path: []const u8) pass.Action {
-    comptime {
-        return Action_DeleteFile.init(path).as_Action();
-    }
+    return comptime Action_DeleteFile.init(path).as_Action();
 }
 
 test "deleteFile" {
@@ -284,9 +270,7 @@ pub const Action_DeleteFile = struct {
 };
 
 pub fn writeFile(comptime path: []const u8, comptime data: []const u8) pass.Action {
-    comptime {
-        return Action_WriteFile.init(path, data).as_Action();
-    }
+    return comptime Action_WriteFile.init(path, data).as_Action();
 }
 
 test "writeFile" {
@@ -303,7 +287,7 @@ pub const Action_WriteFile = struct {
     }
 
     pub fn run(self: *const Self, _: Allocator) pass.ActionResult {
-        const file = std.fs.createFileAbsolute(self.path, .{ .truncate = true, .lock = .Exclusive }) catch return .fail;
+        const file = std.fs.createFileAbsolute(self.path, .{ .truncate = true, .lock = .exclusive }) catch return .fail;
         defer file.close();
         file.writeAll(self.data) catch return .fail;
         return .ok;
@@ -380,9 +364,7 @@ test "groupIdFromName" {
 }
 
 pub fn createDir(comptime path: []const u8, comptime access_mode: u64, comptime user_owner: []const u8, comptime group_owner: []const u8) pass.Action {
-    comptime {
-        return Action_CreateDir.init(path, access_mode, user_owner, group_owner).as_Action();
-    }
+    return comptime Action_CreateDir.init(path, access_mode, user_owner, group_owner).as_Action();
 }
 
 test "createDir" {
@@ -433,9 +415,7 @@ pub const Action_CreateDir = struct {
 // }
 
 pub fn setFilePermissions(comptime path: []const u8, comptime access_mode: u64, comptime user_owner: []const u8, comptime group_owner: []const u8) pass.Action {
-    comptime {
-        return Action_SetFilePermissions.init(path, access_mode, user_owner, group_owner).as_Action();
-    }
+    return comptime Action_SetFilePermissions.init(path, access_mode, user_owner, group_owner).as_Action();
 }
 
 test "setFilePermissions" {
@@ -482,9 +462,7 @@ pub const Action_SetFilePermissions = struct {
 // }
 
 pub fn replaceInFileOnce(comptime path: []const u8, comptime target: []const u8, comptime new_data: []const u8) pass.Action {
-    comptime {
-        return Action_ReplaceInFileOnce.init(path, target, new_data).as_Action();
-    }
+    return comptime Action_ReplaceInFileOnce.init(path, target, new_data).as_Action();
 }
 
 test "replaceInFileOnce" {
@@ -520,7 +498,7 @@ pub const Action_ReplaceInFileOnce = struct {
         }) catch return .fail;
         defer a.free(new_content);
         {
-            var file = std.fs.createFileAbsolute(self.path, .{ .truncate = true, .lock = .Exclusive }) catch return .fail;
+            var file = std.fs.createFileAbsolute(self.path, .{ .truncate = true, .lock = .exclusive }) catch return .fail;
             defer file.close();
             file.writeAll(new_content) catch return .fail;
         }
@@ -557,9 +535,7 @@ test "Action_ReplaceInFileOnce" {
 }
 
 pub fn renameDir(comptime base_dir: []const u8, comptime rel_old_path: []const u8, comptime rel_new_path: []const u8) pass.Action {
-    comptime {
-        return Action_RenameDir.init(base_dir, rel_old_path, rel_new_path).as_Action();
-    }
+    return comptime Action_RenameDir.init(base_dir, rel_old_path, rel_new_path).as_Action();
 }
 
 test "renameDir" {

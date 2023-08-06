@@ -4,9 +4,7 @@ const runWithCheckedOutput = @import("process.zig").runWithCheckedOutput;
 const pass = @import("pass.zig");
 
 pub fn alwaysOk() pass.Check {
-    comptime {
-        return Check_AlwaysOk.init().as_Check();
-    }
+    return comptime Check_AlwaysOk.init().as_Check();
 }
 
 test "alwaysOk" {
@@ -35,9 +33,7 @@ pub const Check_AlwaysOk = struct {
 };
 
 pub fn constant(comptime result: bool) pass.Check {
-    comptime {
-        return Check_Constant.init(result).as_Check();
-    }
+    return comptime Check_Constant.init(result).as_Check();
 }
 
 test "constant" {
@@ -88,9 +84,7 @@ test {
 }
 
 pub fn userIsRoot() pass.Check {
-    comptime {
-        return Check_UserIsRoot.init().as_Check();
-    }
+    return comptime Check_UserIsRoot.init().as_Check();
 }
 
 pub const Check_UserIsRoot = struct {
@@ -111,9 +105,7 @@ pub const Check_UserIsRoot = struct {
 };
 
 pub fn isFile(comptime path: []const u8) pass.Check {
-    comptime {
-        return Check_IsFile.init(path).as_Check();
-    }
+    return comptime Check_IsFile.init(path).as_Check();
 }
 
 test "isFile" {
@@ -138,14 +130,14 @@ pub const Check_IsFile = struct {
     }
 
     pub fn yes(self: *const Self, _: Allocator) bool {
-        const file = std.fs.openFileAbsolute(self.path, .{ .mode = .read_only, .lock = .None }) catch {
+        const file = std.fs.openFileAbsolute(self.path, .{ .mode = .read_only, .lock = .none }) catch {
             return false;
         };
         defer file.close();
         const stat = file.stat() catch {
             return false;
         };
-        return stat.kind == .File;
+        return stat.kind == .file;
     }
 
     pub fn as_Check(self: *const Self) pass.Check {
@@ -171,9 +163,7 @@ test "Check_IsFile" {
 }
 
 pub fn isDir(comptime path: []const u8) pass.Check {
-    comptime {
-        return Check_IsDir.init(path).as_Check();
-    }
+    return comptime Check_IsDir.init(path).as_Check();
 }
 
 test "isDir" {
@@ -189,14 +179,14 @@ pub const Check_IsDir = struct {
     }
 
     pub fn yes(self: *const Self, _: Allocator) bool {
-        const file = std.fs.openFileAbsolute(self.path, .{ .mode = .read_only, .lock = .None }) catch {
+        const file = std.fs.openFileAbsolute(self.path, .{ .mode = .read_only, .lock = .none }) catch {
             return false;
         };
         defer file.close();
         const stat = file.stat() catch {
             return false;
         };
-        return stat.kind == .Directory;
+        return stat.kind == .directory;
     }
 
     pub fn as_Check(self: *const Self) pass.Check {
@@ -222,9 +212,7 @@ test "Check_IsDir" {
 }
 
 pub fn pathReadable(comptime path: []const u8) pass.Check {
-    comptime {
-        return Check_PathReadable.init(path).as_Check();
-    }
+    return comptime Check_PathReadable.init(path).as_Check();
 }
 
 test "pathReadable" {
@@ -240,7 +228,7 @@ pub const Check_PathReadable = struct {
     }
 
     pub fn yes(self: *const Self, _: Allocator) bool {
-        const file = std.fs.openFileAbsolute(self.path, .{ .mode = .read_only, .lock = .None }) catch {
+        const file = std.fs.openFileAbsolute(self.path, .{ .mode = .read_only, .lock = .none }) catch {
             return false;
         };
         defer file.close();
@@ -266,9 +254,7 @@ test "Check_PathReadable" {
 }
 
 pub fn pathWritable(comptime path: []const u8) pass.Check {
-    comptime {
-        return Check_PathWritable.init(path).as_Check();
-    }
+    return comptime Check_PathWritable.init(path).as_Check();
 }
 
 test "pathWritable" {
@@ -284,7 +270,7 @@ pub const Check_PathWritable = struct {
     }
 
     pub fn yes(self: *const Self, _: Allocator) bool {
-        const file = std.fs.openFileAbsolute(self.path, .{ .mode = .write_only, .lock = .None }) catch {
+        const file = std.fs.openFileAbsolute(self.path, .{ .mode = .write_only, .lock = .none }) catch {
             return false;
         };
         defer file.close();
@@ -306,9 +292,7 @@ test "Check_PathWritable" {
 }
 
 pub fn named(comptime name: []const u8, comptime check: pass.Check) pass.Check {
-    comptime {
-        return Check_Named.init(name, check).as_Check();
-    }
+    return comptime Check_Named.init(name, check).as_Check();
 }
 
 test "named" {
@@ -343,9 +327,7 @@ test "Check_Named" {
 }
 
 pub fn not(comptime check: pass.Check) pass.Check {
-    comptime {
-        return Check_Not.init(check).as_Check();
-    }
+    return comptime Check_Not.init(check).as_Check();
 }
 
 test "not" {
@@ -370,9 +352,7 @@ pub const Check_Not = struct {
 };
 
 pub fn or_(comptime checks: []const pass.Check) pass.Check {
-    comptime {
-        return Check_Or.init(checks).as_Check();
-    }
+    return comptime Check_Or.init(checks).as_Check();
 }
 
 test "or_" {
@@ -402,9 +382,7 @@ pub const Check_Or = struct {
 };
 
 pub fn and_(comptime checks: []const pass.Check) pass.Check {
-    comptime {
-        return Check_And.init(checks).as_Check();
-    }
+    return comptime Check_And.init(checks).as_Check();
 }
 
 test "and_" {
@@ -474,9 +452,7 @@ test "Checks boolean logic" {
 }
 
 pub fn stdoutContainsOnce(comptime cmd: []const []const u8, comptime data: []const u8) pass.Check {
-    comptime {
-        return Check_StdoutContainsOnce.init(cmd, data).as_Check();
-    }
+    return comptime Check_StdoutContainsOnce.init(cmd, data).as_Check();
 }
 
 test "stdoutContainsOnce" {
@@ -527,9 +503,7 @@ test "Check_StdoutContainsOnce" {
 }
 
 pub fn stderrContainsOnce(comptime cmd: []const []const u8, comptime data: []const u8) pass.Check {
-    comptime {
-        return Check_StderrContainsOnce.init(cmd, data).as_Check();
-    }
+    return comptime Check_StderrContainsOnce.init(cmd, data).as_Check();
 }
 
 test "stderrContainsOnce" {
@@ -580,9 +554,7 @@ test "Check_StderrContainsOnce" {
 }
 
 pub fn fileContent(comptime path: []const u8, comptime content: []const u8) pass.Check {
-    comptime {
-        return Check_FileContent.init(path, content).as_Check();
-    }
+    return comptime Check_FileContent.init(path, content).as_Check();
 }
 
 test "fileContent" {
@@ -631,9 +603,7 @@ test "Check_FileContent" {
 }
 
 pub fn fileContainsOnce(comptime path: []const u8, comptime target: []const u8) pass.Check {
-    comptime {
-        return Check_FileContainsOnce.init(path, target).as_Check();
-    }
+    return comptime Check_FileContainsOnce.init(path, target).as_Check();
 }
 
 pub const Check_FileContainsOnce = struct {
