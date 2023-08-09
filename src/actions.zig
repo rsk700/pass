@@ -1,6 +1,6 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const pass = @import("pass.zig");
+const pass = @import("main.zig");
 
 pub fn named(comptime name: []const u8, comptime action: pass.Action) pass.Action {
     return comptime Action_Named.init(name, action).as_Action();

@@ -1,7 +1,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const runWithCheckedOutput = @import("process.zig").runWithCheckedOutput;
-const pass = @import("pass.zig");
+const pass = @import("main.zig");
 
 pub fn alwaysOk() pass.Check {
     return comptime Check_AlwaysOk.init().as_Check();

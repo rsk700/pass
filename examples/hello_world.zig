@@ -1,5 +1,5 @@
-// run with:
-// $ zig run examples/hello_world.zig --pkg-begin pass src/pass.zig
+// build with:
+// $ zig build
 
 const std = @import("std");
 const pass = @import("pass");

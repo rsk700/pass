@@ -1,6 +1,7 @@
 test "all tests" {
-    _ = @import("actions.zig");
-    _ = @import("pass.zig");
-    _ = @import("checks.zig");
-    _ = @import("process.zig");
+    const testing = @import("std").testing;
+    testing.refAllDeclsRecursive(@import("main.zig"));
+    testing.refAllDeclsRecursive(@import("actions.zig"));
+    testing.refAllDeclsRecursive(@import("checks.zig"));
+    testing.refAllDeclsRecursive(@import("process.zig"));
 }
